@@ -17,15 +17,15 @@ type ModelConfig = {
 };
 
 const AI_MODELS: Record<string, ModelConfig> = {
-  'glm-4-plus': {
-    name: 'GLM-4 Plus',
-    provider: 'zhipuai',
-    fast: true,
+  'glm-4-32b': {
+    name: 'GLM-4 32B',
+    provider: 'thudm',
+    fast: false,
     cost: 'low'
   },
-  'glm-4-0520': {
-    name: 'GLM-4 0520',
-    provider: 'zhipuai',
+  'glm-4-9b': {
+    name: 'GLM-4 9B',
+    provider: 'thudm',
     fast: true,
     cost: 'low'
   },
@@ -62,7 +62,7 @@ serve(async (req) => {
       template, 
       theme, 
       content,
-      model = 'glm-4-plus',
+      model = 'glm-4-9b',
       generateImages = true,
       generateCaption = true,
       generateHashtags = true,
@@ -152,7 +152,7 @@ ${customPrompt ? `\nINSTRUÇÕES PERSONALIZADAS: ${customPrompt}` : ''}`;
     const userPrompt = customPrompt || `Crie conteúdo profissional e engajante para: ${contentToProcess}`;
 
     // Determine the full model name for OpenRouter
-    const fullModelName = model.includes('/') ? model : `${AI_MODELS[model]?.provider || 'zhipuai'}/${model}`;
+    const fullModelName = model.includes('/') ? model : `${AI_MODELS[model]?.provider || 'thudm'}/${model}`;
     
     console.log('Using model:', fullModelName);
 
