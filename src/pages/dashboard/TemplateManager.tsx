@@ -18,8 +18,11 @@ import {
   Settings,
   Image,
   FileText,
-  Eye
+  Eye,
+  Edit
 } from "lucide-react";
+import TemplateEditor from "@/components/TemplateEditor";
+import { Template } from "@/contexts/TemplateContext";
 import { 
   monthlyTemplates, 
   templateCategories, 
@@ -58,6 +61,8 @@ const TemplateManager = () => {
   });
   const [isCreating, setIsCreating] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showTemplateEditor, setShowTemplateEditor] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<MonthlyTemplate | null>(null);
 
   const stats = getTemplateStats();
 
@@ -156,6 +161,24 @@ const TemplateManager = () => {
     }
   };
 
+  const handleEditTemplate = (template: MonthlyTemplate) => {
+    setEditingTemplate(template);
+    setShowTemplateEditor(true);
+  };
+
+  const handleSaveEditedTemplate = (template: Template) => {
+    // Aqui você salvaria o template editado no banco de dados
+    console.log('Template editado:', template);
+    toast.success("Template editado com sucesso!");
+    setShowTemplateEditor(false);
+    setEditingTemplate(null);
+  };
+
+  const handleCreateNewTemplate = () => {
+    setEditingTemplate(null);
+    setShowTemplateEditor(true);
+  };
+
   const getCurrentMonthTemplates = () => {
     const currentMonth = new Date().getMonth();
     const currentYear = new Date().getFullYear();
@@ -198,6 +221,10 @@ const TemplateManager = () => {
           <Button onClick={scheduleMonthlyUpdate} variant="outline">
             <Calendar className="mr-2 h-4 w-4" />
             Agendar Atualizações
+          </Button>
+          <Button onClick={handleCreateNewTemplate} variant="outline">
+            <Edit className="mr-2 h-4 w-4" />
+            Editor Visual
           </Button>
           <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
             <DialogTrigger asChild>
@@ -482,6 +509,13 @@ const TemplateManager = () => {
                           <Button variant="ghost" size="sm">
                             <Eye className="h-4 w-4" />
                           </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => handleEditTemplate(template)}
+                          >
+                            <Edit className="h-4 w-4 text-blue-500" />
+                          </Button>
                           <Button variant="ghost" size="sm">
                             <Trash2 className="h-4 w-4 text-red-500" />
                           </Button>
@@ -532,6 +566,20 @@ const TemplateManager = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Template Editor Modal */}
+      {showTemplateEditor && (
+        <div className="fixed inset-0 z-50 bg-background">
+          <TemplateEditor
+            template={editingTemplate}
+            onSave={handleSaveEditedTemplate}
+            onCancel={() => {
+              setShowTemplateEditor(false);
+              setEditingTemplate(null);
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 };
