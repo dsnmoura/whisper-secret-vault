@@ -389,9 +389,9 @@ const CreatePost = () => {
               <div className="text-center">
                 <Badge className="mb-4">{networks.find(n => n.id === selectedNetwork)?.name}</Badge>
                 <div className="aspect-square max-w-sm mx-auto bg-white rounded-lg shadow-card p-4 flex items-center justify-center">
-                  {generatedPost?.image_url ? (
+                  {generatedPost?.generated_images?.length > 0 ? (
                     <img 
-                      src={generatedPost.image_url} 
+                      src={generatedPost.generated_images[0].url} 
                       alt="Post gerado"
                       className="w-full h-full object-cover rounded-lg"
                     />
@@ -400,7 +400,7 @@ const CreatePost = () => {
                       <Image className="h-12 w-12 text-primary mx-auto" />
                       <p className="text-sm font-medium">Post Visual</p>
                       <p className="text-xs text-muted-foreground">
-                        {isGenerating ? "Gerando imagem..." : "Imagem será gerada aqui"}
+                        {isGenerating ? "Gerando imagem..." : "Imagem não gerada pela IA"}
                       </p>
                     </div>
                   )}
@@ -419,8 +419,11 @@ const CreatePost = () => {
               {generatedPost.hashtags && (
                 <div className="space-y-2">
                   <h4 className="font-semibold text-sm">Hashtags:</h4>
-                  <div className="bg-background rounded-lg p-3 text-sm text-primary break-words whitespace-pre-wrap">
-                    {generatedPost.hashtags}
+                  <div className="bg-background rounded-lg p-3 text-sm text-primary break-words overflow-wrap-anywhere">
+                    {Array.isArray(generatedPost.hashtags) 
+                      ? generatedPost.hashtags.join(' ')
+                      : generatedPost.hashtags
+                    }
                   </div>
                 </div>
               )}
@@ -435,13 +438,13 @@ const CreatePost = () => {
                 <Button 
                   variant="secondary"
                   onClick={() => {
-                    if (generatedPost?.image_url) {
+                    if (generatedPost?.generated_images?.length > 0) {
                       const link = document.createElement('a');
-                      link.href = generatedPost.image_url;
+                      link.href = generatedPost.generated_images[0].url;
                       link.download = 'post-image.png';
                       link.click();
                     } else {
-                      toast.error("Nenhuma imagem disponível para download");
+                      toast.error("Nenhuma imagem foi gerada pela IA");
                     }
                   }}
                 >
