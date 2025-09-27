@@ -17,6 +17,18 @@ type ModelConfig = {
 };
 
 const AI_MODELS: Record<string, ModelConfig> = {
+  'glm-4-plus': {
+    name: 'GLM-4 Plus',
+    provider: 'zhipuai',
+    fast: true,
+    cost: 'low'
+  },
+  'glm-4-0520': {
+    name: 'GLM-4 0520',
+    provider: 'zhipuai',
+    fast: true,
+    cost: 'low'
+  },
   'gpt-4o-mini': {
     name: 'GPT-4o Mini',
     provider: 'openai',
@@ -50,7 +62,7 @@ serve(async (req) => {
       template, 
       theme, 
       content,
-      model = 'gpt-4o-mini',
+      model = 'glm-4-plus',
       generateImages = true,
       generateCaption = true,
       generateHashtags = true,
@@ -140,7 +152,7 @@ ${customPrompt ? `\nINSTRUÇÕES PERSONALIZADAS: ${customPrompt}` : ''}`;
     const userPrompt = customPrompt || `Crie conteúdo profissional e engajante para: ${contentToProcess}`;
 
     // Determine the full model name for OpenRouter
-    const fullModelName = model.includes('/') ? model : `${AI_MODELS[model]?.provider || 'openai'}/${model}`;
+    const fullModelName = model.includes('/') ? model : `${AI_MODELS[model]?.provider || 'zhipuai'}/${model}`;
     
     console.log('Using model:', fullModelName);
 
@@ -244,25 +256,45 @@ ${customPrompt ? `\nINSTRUÇÕES PERSONALIZADAS: ${customPrompt}` : ''}`;
               'X-Title': 'PostCraft - AI Image Generator',
             },
             body: JSON.stringify({
-              model: 'openai/dall-e-3',
-              prompt: `${prompt}. High quality, professional, suitable for ${network} social media post. Aspect ratio suitable for social media.`,
-              n: 1,
-              size: '1024x1024',
-              quality: 'hd',
+              model: 'black-forest-labs/flux-1-schnell',
+              prompt: `${prompt}. High quality, professional, suitable for ${network} social media post. Modern design, vibrant colors, engaging composition.`,
+              width: 1024,
+              height: 1024,
+              steps: 4,
+              response_format: 'url'
             }),
           });
 
           if (imageResponse.ok) {
             const imageData = await imageResponse.json();
+            console.log('Image generation response:', imageData);
+            
+            // Handle different response formats
             if (imageData.data && imageData.data[0]) {
+              // OpenAI format
               generatedImages.push({
                 prompt: prompt,
                 url: imageData.data[0].url,
-                revised_prompt: imageData.data[0].revised_prompt
+                revised_prompt: imageData.data[0].revised_prompt || prompt
+              });
+            } else if (imageData.url) {
+              // Direct URL format
+              generatedImages.push({
+                prompt: prompt,
+                url: imageData.url,
+                revised_prompt: prompt
+              });
+            } else if (imageData.images && imageData.images[0]) {
+              // Alternative format
+              generatedImages.push({
+                prompt: prompt,
+                url: imageData.images[0].url,
+                revised_prompt: prompt
               });
             }
           } else {
-            console.error('Failed to generate image for prompt:', prompt);
+            const errorText = await imageResponse.text();
+            console.error('Failed to generate image for prompt:', prompt, 'Error:', errorText);
           }
         } catch (error) {
           console.error('Error generating image:', error);

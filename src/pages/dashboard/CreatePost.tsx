@@ -119,7 +119,7 @@ const CreatePost = () => {
           content: postContent,
           objective: "Criar conteúdo engajante",
           theme: postContent,
-          model: 'gpt-4o-mini',
+          model: 'glm-4-plus',
           generateImages: true,
           generateCaption: true,
           generateHashtags: true
@@ -439,24 +439,58 @@ const CreatePost = () => {
                   variant="secondary"
                   onClick={() => {
                     if (generatedPost?.generated_images?.length > 0) {
-                      const link = document.createElement('a');
-                      link.href = generatedPost.generated_images[0].url;
-                      link.download = 'post-image.png';
-                      link.click();
+                      // Baixar todas as imagens geradas
+                      generatedPost.generated_images.forEach((image, index) => {
+                        const link = document.createElement('a');
+                        link.href = image.url;
+                        link.download = `post-image-${index + 1}.png`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                      });
+                      toast.success(`${generatedPost.generated_images.length} imagem(ns) baixada(s) com sucesso!`);
                     } else {
                       toast.error("Nenhuma imagem foi gerada pela IA");
                     }
                   }}
                 >
-                  Baixar Imagem
+                  Baixar Imagem{generatedPost?.generated_images?.length > 1 ? 's' : ''}
                 </Button>
                 <Button 
                   className="gradient-primary"
-                  onClick={() => {
-                    toast.success("Funcionalidade de publicação será implementada em breve!");
+                  onClick={async () => {
+                    if (!generatedPost) {
+                      toast.error("Nenhum post gerado para salvar");
+                      return;
+                    }
+
+                    try {
+                      // Criar um objeto com os dados do post
+                      const postData = {
+                        network: selectedNetwork,
+                        template: selectedTemplate,
+                        caption: generatedPost.caption,
+                        hashtags: Array.isArray(generatedPost.hashtags) 
+                          ? generatedPost.hashtags.join(' ')
+                          : generatedPost.hashtags,
+                        images: generatedPost.generated_images || [],
+                        model_used: generatedPost.model_used || 'glm-4-plus',
+                        created_at: new Date().toISOString()
+                      };
+
+                      // Copiar dados para a área de transferência
+                      const postText = `${generatedPost.caption}\n\n${Array.isArray(generatedPost.hashtags) ? generatedPost.hashtags.join(' ') : generatedPost.hashtags}`;
+                      
+                      await navigator.clipboard.writeText(postText);
+                      toast.success("Post copiado para a área de transferência!");
+                      
+                    } catch (error) {
+                      console.error('Erro ao copiar post:', error);
+                      toast.error("Erro ao copiar o post");
+                    }
                   }}
                 >
-                  Publicar Agora
+                  Copiar Post
                 </Button>
               </div>
             </div>
