@@ -389,11 +389,21 @@ const CreatePost = () => {
               <div className="text-center">
                 <Badge className="mb-4">{networks.find(n => n.id === selectedNetwork)?.name}</Badge>
                 <div className="aspect-square max-w-sm mx-auto bg-white rounded-lg shadow-card p-4 flex items-center justify-center">
-                  <div className="text-center space-y-2">
-                    <Image className="h-12 w-12 text-primary mx-auto" />
-                    <p className="text-sm font-medium">Post Visual</p>
-                    <p className="text-xs text-muted-foreground">Imagem será gerada aqui</p>
-                  </div>
+                  {generatedPost?.image_url ? (
+                    <img 
+                      src={generatedPost.image_url} 
+                      alt="Post gerado"
+                      className="w-full h-full object-cover rounded-lg"
+                    />
+                  ) : (
+                    <div className="text-center space-y-2">
+                      <Image className="h-12 w-12 text-primary mx-auto" />
+                      <p className="text-sm font-medium">Post Visual</p>
+                      <p className="text-xs text-muted-foreground">
+                        {isGenerating ? "Gerando imagem..." : "Imagem será gerada aqui"}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
               
@@ -409,7 +419,7 @@ const CreatePost = () => {
               {generatedPost.hashtags && (
                 <div className="space-y-2">
                   <h4 className="font-semibold text-sm">Hashtags:</h4>
-                  <div className="bg-background rounded-lg p-3 text-sm text-primary">
+                  <div className="bg-background rounded-lg p-3 text-sm text-primary break-words whitespace-pre-wrap">
                     {generatedPost.hashtags}
                   </div>
                 </div>
@@ -422,10 +432,27 @@ const CreatePost = () => {
                 Editar Post
               </Button>
               <div className="flex gap-2">
-                <Button variant="secondary">
+                <Button 
+                  variant="secondary"
+                  onClick={() => {
+                    if (generatedPost?.image_url) {
+                      const link = document.createElement('a');
+                      link.href = generatedPost.image_url;
+                      link.download = 'post-image.png';
+                      link.click();
+                    } else {
+                      toast.error("Nenhuma imagem disponível para download");
+                    }
+                  }}
+                >
                   Baixar Imagem
                 </Button>
-                <Button className="gradient-primary">
+                <Button 
+                  className="gradient-primary"
+                  onClick={() => {
+                    toast.success("Funcionalidade de publicação será implementada em breve!");
+                  }}
+                >
                   Publicar Agora
                 </Button>
               </div>
